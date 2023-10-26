@@ -9,3 +9,11 @@
   :depends-on (#:cffi)
   :components ((:file "package")
                (:file "cl-lttb")))
+
+(asdf:defsystem "cl-lttb/tests" 
+  :depends-on ("cl-lttb" "fiveam")
+  :components ((:module "t"
+		:components ((:file "tests"))))
+  :perform (test-op (o s)
+		    (uiop:symbol-call :fiveam #:run!
+				      (uiop:find-symbol* 'fst-processor-suite 'cl-lttb-tests))))

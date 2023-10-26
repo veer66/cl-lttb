@@ -17,13 +17,15 @@
 (defun fst-processor-valid-p (fst-processor)
   (not (= 0 (fst-processor-is-valid* fst-processor))))
 
+(defcfun ("lttb_fst_processor_init_generation" fst-processor-init-generation) :void (fst_processor :pointer))
+(defcfun ("lttb_fst_processor_init_postgeneration" fst-processor-init-generation) :void (fst_processor :pointer))
 (defcenum generation-mode
-  :gm_clean
-  :gm_unknown
-  :gm_all
-  :gm_tagged
-  :gm_tagged_nm
-  :gm_carefulcase)
+	  :gm_clean
+	  :gm_unknown
+	  :gm_all
+	  :gm_tagged
+	  :gm_tagged_nm
+	  :gm_carefulcase)
 
 (defcfun ("lttb_fst_processor_generate" fst-processor-generate*)
   :void
@@ -41,6 +43,25 @@
 			       (null-pointer)))
 	(mode-c (foreign-enum-value 'generation-mode mode)))
     (fst-processor-generate* fst-processor input-pathname-c output-pathname-c mode-c)
+    (unless (null-pointer-p input-pathname-c)
+      (foreign-string-free input-pathname-c))
+    (unless (null-pointer-p output-pathname-c)
+      (foreign-string-free output-pathname-c))))
+
+(defcfun ("lttb_fst_processor_postgenerate" fst-processor-postgenerate*)
+  :void
+  (fst_processor :pointer)
+  (input_pathname :pointer)
+  (output_pathname :pointer))
+
+(defun fst-processor-postgenerate (fst-processor input-pathname output_pathname)
+  (let ((input-pathname-c (if input-pathname
+			      (foreign-string-alloc (namestring input-pathname))
+			      (null-pointer)))
+	(output-pathname-c (if output-pathname
+			       (foreign-string-alloc (namestring output-pathname))
+			       (null-pointer))))
+    (fst-processor-postgenerate* fst-processor input-pathname-c output-pathname-c)
     (unless (null-pointer-p input-pathname-c)
       (foreign-string-free input-pathname-c))
     (unless (null-pointer-p output-pathname-c)
