@@ -15,7 +15,9 @@
 					    :name (format nil "cl-lttb-test-fst-final-~a" pid)))
 	 (fst-processor (fst-processor-new))
 	 (fst-processor-post (fst-processor-new)))
+    (fst-processor-load fst-processor #P"t/tha-eng.autogen.bin")
     (fst-processor-init-generation fst-processor)
+    (fst-processor-load fst-processor-post #P"t/tha-eng.autopgen.bin")
     (fst-processor-init-postgeneration fst-processor-post)
     (is (fst-processor-valid-p fst-processor))
     (fst-processor-generate fst-processor "t/morph1.txt" tmp-imm-pathname :GM_CLEAN)
@@ -30,3 +32,8 @@
     (uiop:delete-file-if-exists tmp-final-pathname)
     (fst-processor-destroy fst-processor-post)
     (fst-processor-destroy fst-processor)))
+
+(test with-generator-this-product
+  (with-fst-generator (g #P"t/tha-eng.autogen.bin")
+    (is (equal "this product"
+	       (fst-processor-generate-in-mem g "^this<det><dem><sg>$ ^product<n><sg>$" 0)))))

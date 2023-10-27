@@ -48,8 +48,32 @@
     (unless (null-pointer-p output-pathname-c)
       (foreign-string-free output-pathname-c))))
 
+(defcfun ("lttb_fst_processor_generate_in_mem" fst-processor-generate-in-mem*)
+    :int
+  (fst_processor :pointer)
+  (input_buf :pointer)
+  (output_buf :pointer)
+  (output_buf_size :pointer)
+  (mode :int))
+
+(defun fst-processor-generate-in-mem (fst-processor input-string mode)
+  (with-foreign-string (input-string* input-string)
+    (let ((output-buffer-pointer (cffi:foreign-alloc :pointer))
+	  (size-pointer (cffi:foreign-alloc :pointer)))
+      (cl-lttb::fst-processor-generate-in-mem* fst-processor
+					       input-string*
+					       output-buffer-pointer
+					       size-pointer
+					       mode)
+	(let* ((size (cffi:mem-ref size-pointer :int))
+	       (output-buffer-pointer* (cffi:mem-ref output-buffer-pointer :pointer))
+	       (output-buffer (cffi:foreign-string-to-lisp output-buffer-pointer* :count size)))
+	  (cffi:foreign-free output-buffer-pointer)
+	  (cffi:foreign-free size-pointer)
+	  output-buffer))))
+
 (defcfun ("lttb_fst_processor_postgenerate" fst-processor-postgenerate*)
-  :void
+    :void
   (fst_processor :pointer)
   (input_pathname :pointer)
   (output_pathname :pointer))
@@ -74,8 +98,6 @@
      (unwind-protect
 	  (progn
 	    (fst-processor-load ,generator ,fst-pathname)
-	    (fst-processor-init-generation)
+	    (fst-processor-init-generation ,generator)
 	    ,@body)
        (fst-processor-destroy ,generator))))
-
-
