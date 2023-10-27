@@ -33,7 +33,12 @@
     (fst-processor-destroy fst-processor-post)
     (fst-processor-destroy fst-processor)))
 
-(test with-generator-this-product
+(test with-postgenerator-this-product
   (with-fst-generator (g #P"t/tha-eng.autogen.bin")
-    (is (equal "this product"
-	       (fst-processor-generate-in-mem g "^this<det><dem><sg>$ ^product<n><sg>$" 0)))))
+    (with-fst-postgenerator (pg #P"t/tha-eng.autopgen.bin")
+    (is (equal "this product "
+	       (fst-processor-postgenerate-in-mem
+		pg
+		(fst-processor-generate-in-mem
+		 g
+		 "^this<det><dem><sg>$ ^product<n><sg>$ " :GM_CLEAN)))))))

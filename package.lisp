@@ -11,4 +11,6 @@
 	   #:fst-processor-generate
 	   #:fst-processor-generate-in-mem
 	   #:fst-processor-postgenerate
-	   #:with-fst-generator))
+	   #:fst-processor-postgenerate-in-mem
+	   #:with-fst-generator
+	   #:with-fst-postgenerator))
