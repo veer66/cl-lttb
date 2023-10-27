@@ -12,7 +12,7 @@
   :in-order-to ((test-op (test-op "cl-lttb/tests"))))
 
 (asdf:defsystem "cl-lttb/tests" 
-  :depends-on ("cl-lttb" "fiveam")
+  :depends-on ("cl-lttb" "fiveam" "osicat" "uiop")
   :components ((:module "t"
 		:components ((:file "tests"))))
   :perform (test-op (o s)

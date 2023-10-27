@@ -18,7 +18,7 @@
   (not (= 0 (fst-processor-is-valid* fst-processor))))
 
 (defcfun ("lttb_fst_processor_init_generation" fst-processor-init-generation) :void (fst_processor :pointer))
-(defcfun ("lttb_fst_processor_init_postgeneration" fst-processor-init-generation) :void (fst_processor :pointer))
+(defcfun ("lttb_fst_processor_init_postgeneration" fst-processor-init-postgeneration) :void (fst_processor :pointer))
 (defcenum generation-mode
 	  :gm_clean
 	  :gm_unknown
@@ -54,7 +54,7 @@
   (input_pathname :pointer)
   (output_pathname :pointer))
 
-(defun fst-processor-postgenerate (fst-processor input-pathname output_pathname)
+(defun fst-processor-postgenerate (fst-processor input-pathname output-pathname)
   (let ((input-pathname-c (if input-pathname
 			      (foreign-string-alloc (namestring input-pathname))
 			      (null-pointer)))
