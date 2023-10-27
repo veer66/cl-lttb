@@ -66,3 +66,16 @@
       (foreign-string-free input-pathname-c))
     (unless (null-pointer-p output-pathname-c)
       (foreign-string-free output-pathname-c))))
+
+;; Macro
+
+(defmacro with-fst-generator ((generator fst-pathname) &body body)
+  `(let ((,generator (fst-processor-new)))
+     (unwind-protect
+	  (progn
+	    (fst-processor-load ,generator ,fst-pathname)
+	    (fst-processor-init-generation)
+	    ,@body)
+       (fst-processor-destroy ,generator))))
+
+
