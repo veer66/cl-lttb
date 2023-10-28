@@ -36,9 +36,10 @@
 (test with-postgenerator-this-product
   (with-fst-generator (g #P"t/tha-eng.autogen.bin")
     (with-fst-postgenerator (pg #P"t/tha-eng.autopgen.bin")
-    (is (equal "this product "
-	       (fst-processor-postgenerate-in-mem
-		pg
-		(fst-processor-generate-in-mem
-		 g
-		 "^this<det><dem><sg>$ ^product<n><sg>$ " :GM_CLEAN)))))))
+      (let* ((morph "^this<det><dem><sg>$ ^product<n><sg>$ ")
+	     (gened (fst-processor-generate-in-mem g morph :GM_CLEAN))
+	     (postgened (fst-processor-postgenerate-in-mem pg gened)))
+	(is (equal "this product" (string-trim '(#\Space) postgened)))))))
+
+(with-fst-postgenerator (pg #P"t/tha-eng.autopgen.bin")
+  (fst-processor-postgenerate-in-mem pg "this product"))
