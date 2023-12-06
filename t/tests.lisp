@@ -6,6 +6,20 @@
 (def-suite fst-processor-suite)
 (in-suite fst-processor-suite)
 
+(test fst-processor-analysis-this-product
+  (let* ((pid (osicat-posix:getpid))
+	 (tmp-out-pathname (make-pathname :directory "tmp"
+					  :name (format nil "cl-lttb-test-fst-ana-~a" pid)))
+	 (fst-processor (fst-processor-new)))
+    (fst-processor-load fst-processor #P"t/eng-tha.automorf.bin")
+    (fst-processor-init-analysis fst-processor)
+    (is (fst-processor-valid-p fst-processor))
+    (fst-processor-analysis fst-processor #P"t/this-product.txt" tmp-out-pathname)
+    (is (cl-ppcre:scan "<det>"
+		       (with-open-file (f tmp-out-pathname)
+			 (read-line f))))
+    (uiop:delete-file-if-exists tmp-out-pathname)
+    (fst-processor-destroy fst-processor)))
 
 (test fst-processor-generate-this-product
   (let* ((pid (osicat-posix:getpid))

@@ -17,15 +17,58 @@
 (defun fst-processor-valid-p (fst-processor)
   (not (= 0 (fst-processor-is-valid* fst-processor))))
 
+(defcfun ("lttb_fst_processor_init_analysis" fst-processor-init-analysis) :void (fst_processor :pointer))
 (defcfun ("lttb_fst_processor_init_generation" fst-processor-init-generation) :void (fst_processor :pointer))
 (defcfun ("lttb_fst_processor_init_postgeneration" fst-processor-init-postgeneration) :void (fst_processor :pointer))
+
+(defcfun ("lttb_fst_processor_analysis" fst-processor-analysis*)
+  :void
+  (fst_processor :pointer)
+  (input_pathname :pointer)
+  (output_pathname :pointer))
+
+(defun fst-processor-analysis (fst-processor input-pathname output-pathname)
+  (let ((input-pathname-c (if input-pathname
+			      (foreign-string-alloc (namestring input-pathname))
+			      (null-pointer)))
+	(output-pathname-c (if output-pathname
+			       (foreign-string-alloc (namestring output-pathname))
+			       (null-pointer))))
+    (fst-processor-analysis* fst-processor input-pathname-c output-pathname-c)
+    (unless (null-pointer-p input-pathname-c)
+      (foreign-string-free input-pathname-c))
+    (unless (null-pointer-p output-pathname-c)
+      (foreign-string-free output-pathname-c))))
+
+(defcfun ("lttb_fst_processor_analysis_in_mem" fst-processor-analysis-in-mem*)
+  :int
+  (fst_processor :pointer)
+  (input_buf :pointer)
+  (output_buf :pointer)
+  (output_buf_size :pointer))
+
+(defun fst-processor-analysis-in-mem (fst-processor input-string mode)
+  (with-foreign-string (input-string* input-string)
+    (let ((output-buffer-pointer (cffi:foreign-alloc :pointer))
+	  (size-pointer (cffi:foreign-alloc :pointer)))
+      (cl-lttb::fst-processor-analysis-in-mem* fst-processor
+					       input-string*
+					       output-buffer-pointer
+					       size-pointer)
+      (let* ((size (cffi:mem-ref size-pointer :int))
+	     (output-buffer-pointer* (cffi:mem-ref output-buffer-pointer :pointer))
+	     (output-buffer (cffi:foreign-string-to-lisp output-buffer-pointer* :count size)))
+	(cffi:foreign-free output-buffer-pointer)
+	(cffi:foreign-free size-pointer)
+	output-buffer))))
+
 (defcenum generation-mode
-	  :gm_clean
-	  :gm_unknown
-	  :gm_all
-	  :gm_tagged
-	  :gm_tagged_nm
-	  :gm_carefulcase)
+  :gm_clean
+  :gm_unknown
+  :gm_all
+  :gm_tagged
+  :gm_tagged_nm
+  :gm_carefulcase)
 
 (defcfun ("lttb_fst_processor_generate" fst-processor-generate*)
   :void
@@ -49,7 +92,7 @@
       (foreign-string-free output-pathname-c))))
 
 (defcfun ("lttb_fst_processor_generate_in_mem" fst-processor-generate-in-mem*)
-    :int
+  :int
   (fst_processor :pointer)
   (input_buf :pointer)
   (output_buf :pointer)
@@ -74,7 +117,7 @@
 	  output-buffer)))))
 
 (defcfun ("lttb_fst_processor_postgenerate" fst-processor-postgenerate*)
-    :void
+  :void
   (fst_processor :pointer)
   (input_pathname :pointer)
   (output_pathname :pointer))
@@ -93,7 +136,7 @@
       (foreign-string-free output-pathname-c))))
 
 (defcfun ("lttb_fst_processor_postgenerate_in_mem" fst-processor-postgenerate-in-mem*)
-    :int
+  :int
   (fst_processor :pointer)
   (input_buf :pointer)
   (output_buf :pointer)
@@ -107,12 +150,12 @@
 						   input-string*
 						   output-buffer-pointer
 						   size-pointer)
-	(let* ((size (cffi:mem-ref size-pointer :int))
-	       (output-buffer-pointer* (cffi:mem-ref output-buffer-pointer :pointer))
-	       (output-buffer (cffi:foreign-string-to-lisp output-buffer-pointer* :count size)))
-	  (cffi:foreign-free output-buffer-pointer)
-	  (cffi:foreign-free size-pointer)
-	  output-buffer))))
+      (let* ((size (cffi:mem-ref size-pointer :int))
+	     (output-buffer-pointer* (cffi:mem-ref output-buffer-pointer :pointer))
+	     (output-buffer (cffi:foreign-string-to-lisp output-buffer-pointer* :count size)))
+	(cffi:foreign-free output-buffer-pointer)
+	(cffi:foreign-free size-pointer)
+	output-buffer))))
 
 ;; Macro
 
