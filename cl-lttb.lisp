@@ -2,16 +2,27 @@
 
 (in-package #:cl-lttb)
 
+(defcenum lttb-error-code
+  :lttb-ok
+  :lttb-cannot-open-input-file
+  :lttb-cannot-open-output-file)
+
+(define-condition unable-to-load-fst (error)
+  ((fst-pathname :initarg :fst-pathname :reader fst-pathname)))
+
 (define-foreign-library clttoolbox (t (:default "libclttoolbox")))
 (use-foreign-library clttoolbox)
 
 (defcfun ("lttb_fst_processor_new" fst-processor-new) :pointer)
 (defcfun ("lttb_fst_processor_destroy" fst-processor-destroy) :void (fst_processor :pointer))
-(defcfun ("lttb_fst_processor_load" fst-processor-load*) :void (fst_processor :pointer) (input_pathname :pointer))
+(defcfun ("lttb_fst_processor_load" fst-processor-load*) :int (fst_processor :pointer) (input_pathname :pointer))
+
 (defun fst-processor-load (fst-processor input-pathname)
   (declare (pathname input-pathname))
-  (with-foreign-string (input-pathname-c (namestring input-pathname))
-    (fst-processor-load* fst-processor input-pathname-c)))
+  (unless (eq (with-foreign-string (input-pathname-c (namestring input-pathname))
+		(fst-processor-load* fst-processor input-pathname-c))
+	      (foreign-enum-value 'lttb-error-code :lttb-ok))
+    (error 'unable-to-load-fst :fst-pathname input-pathname)))
 
 (defcfun ("lttb_fst_processor_is_valid" fst-processor-is-valid*) :int (fst_processor :pointer))
 (defun fst-processor-valid-p (fst-processor)

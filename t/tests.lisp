@@ -6,6 +6,11 @@
 (def-suite fst-processor-suite)
 (in-suite fst-processor-suite)
 
+(test cannot-load-fst
+  (let ((fst (fst-processor-new)))
+    (signals unable-to-load-fst
+      (fst-processor-load fst #P"NO-FILE"))))
+
 (test fst-processor-analysis-this-product
   (let* ((pid (osicat-posix:getpid))
 	 (tmp-out-pathname (make-pathname :directory "tmp"
@@ -55,5 +60,3 @@
 	     (postgened (fst-processor-postgenerate-in-mem pg gened)))
 	(is (equal "this product" (string-trim '(#\Space) postgened)))))))
 
-(with-fst-postgenerator (pg #P"t/tha-eng.autopgen.bin")
-  (fst-processor-postgenerate-in-mem pg "this product"))
