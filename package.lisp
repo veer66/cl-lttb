@@ -15,6 +15,7 @@
 	   #:fst-processor-generate-in-mem
 	   #:fst-processor-postgenerate
 	   #:fst-processor-postgenerate-in-mem
+	   #:with-fst-processor
 	   #:with-fst-generator
 	   #:with-fst-postgenerator
 	   #:unable-to-load-fst))

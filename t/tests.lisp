@@ -26,6 +26,11 @@
     (uiop:delete-file-if-exists tmp-out-pathname)
     (fst-processor-destroy fst-processor)))
 
+(test fst-processor-analysis-of-this-product-in-mem
+  (with-fst-processor (fst-processor #P"t/eng-tha.automorf.bin" :analysis)
+    (is (cl-ppcre:scan "<det>"
+		       (fst-processor-analysis-in-mem fst-processor "This product")))))
+
 (test fst-processor-generate-this-product
   (let* ((pid (osicat-posix:getpid))
 	 (tmp-imm-pathname (make-pathname :directory "tmp"

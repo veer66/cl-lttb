@@ -58,7 +58,7 @@
   (output_buf :pointer)
   (output_buf_size :pointer))
 
-(defun fst-processor-analysis-in-mem (fst-processor input-string mode)
+(defun fst-processor-analysis-in-mem (fst-processor input-string)
   (with-foreign-string (input-string* input-string)
     (let ((output-buffer-pointer (cffi:foreign-alloc :pointer))
 	  (size-pointer (cffi:foreign-alloc :pointer)))
@@ -170,21 +170,22 @@
 
 ;; Macro
 
-(defmacro with-fst-processor ((processor fst-pathname &key processor-type) &body body)
+(defmacro with-fst-processor ((processor fst-pathname processor-type) &body body)
   `(let ((,processor (fst-processor-new)))
      (unwind-protect
 	  (progn
 	    (fst-processor-load ,processor ,fst-pathname)
 	    (ecase ,processor-type
+	      (:analysis (fst-processor-init-analysis ,processor))
 	      (:generator (fst-processor-init-generation ,processor))
 	      (:postgenerator (fst-processor-init-postgeneration ,processor)))
 	    ,@body)
        (fst-processor-destroy ,processor))))
 
 (defmacro with-fst-generator ((generator fst-pathname) &body body)
-  `(with-fst-processor (,generator ,fst-pathname :processor-type :generator)
+  `(with-fst-processor (,generator ,fst-pathname :generator)
      ,@body))
 
 (defmacro with-fst-postgenerator ((postgenerator fst-pathname) &body body)
-  `(with-fst-processor (,postgenerator ,fst-pathname :processor-type :postgenerator)
+  `(with-fst-processor (,postgenerator ,fst-pathname :postgenerator)
      ,@body))
