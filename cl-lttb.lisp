@@ -170,20 +170,21 @@
 
 ;; Macro
 
-(defmacro with-fst-generator ((generator fst-pathname) &body body)
-  `(let ((,generator (fst-processor-new)))
+(defmacro with-fst-processor ((processor fst-pathname &key processor-type) &body body)
+  `(let ((,processor (fst-processor-new)))
      (unwind-protect
 	  (progn
-	    (fst-processor-load ,generator ,fst-pathname)
-	    (fst-processor-init-generation ,generator)
+	    (fst-processor-load ,processor ,fst-pathname)
+	    (ecase ,processor-type
+	      (:generator (fst-processor-init-generation ,processor))
+	      (:postgenerator (fst-processor-init-postgeneration ,processor)))
 	    ,@body)
-       (fst-processor-destroy ,generator))))
+       (fst-processor-destroy ,processor))))
+
+(defmacro with-fst-generator ((generator fst-pathname) &body body)
+  `(with-fst-processor (,generator ,fst-pathname :processor-type :generator)
+     ,@body))
 
 (defmacro with-fst-postgenerator ((postgenerator fst-pathname) &body body)
-  `(let ((,postgenerator (fst-processor-new)))
-     (unwind-protect
-	  (progn
-	    (fst-processor-load ,postgenerator ,fst-pathname)
-	    (fst-processor-init-postgeneration ,postgenerator)
-	    ,@body)
-       (fst-processor-destroy ,postgenerator))))
+  `(with-fst-processor (,postgenerator ,fst-pathname :processor-type :postgenerator)
+     ,@body))
